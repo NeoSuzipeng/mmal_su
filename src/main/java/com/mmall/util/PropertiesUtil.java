@@ -19,10 +19,10 @@ public class PropertiesUtil {
     private static Properties properties;
 
     static{
-        String fileName = "src/main/resources.beta/mmall.properties";
+        String fileName = "mmall.properties";
         properties = new Properties();
         try {
-            properties.load(new InputStreamReader(PropertiesUtil.class.getClassLoader().getResourceAsStream(fileName)));
+            properties.load(new InputStreamReader(PropertiesUtil.class.getClassLoader().getResourceAsStream(fileName),"UTF-8"));
         } catch (IOException e) {
             logger.error("properties 装配失败");
         }
@@ -41,7 +41,7 @@ public class PropertiesUtil {
             return defaultValue;
         return value;
     }
-//    public static void main(String[] args){
-//        System.out.print(PropertiesUtil.getProperty("password.salt"));
-//    }
+    public static void main(String[] args){
+        System.out.print(PropertiesUtil.getProperty("alipay.callback.url"));
+    }
 }

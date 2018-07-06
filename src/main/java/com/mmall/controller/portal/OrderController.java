@@ -66,7 +66,7 @@ public class OrderController {
      * @param request
      * @return
      */
-    @RequestMapping(value = "alipay_callback.do",method = RequestMethod.POST)
+    @RequestMapping(value = "alipay_callback.do")
     @ResponseBody
     public Object alipayCallBack(HttpSession session, Long orderNo, HttpServletRequest request){
 
@@ -87,7 +87,7 @@ public class OrderController {
 
         //验证回调正确性
         //第一步： 在通知返回参数列表中，除去sign、sign_type两个参数外，凡是通知返回回来的参数皆是待验签的参数
-        parameters.remove("trade_status");
+        parameters.remove("sign_type");
         //第二步：利用支付宝提供的API进行验签
         try {
             boolean alipayRSACheckedV2 = AlipaySignature.rsaCheckV2(parameters, Configs.getAlipayPublicKey(), "utf-8",Configs.getSignType());
@@ -101,6 +101,7 @@ public class OrderController {
         //todo 验证数据正确性
 
         //判断回调是否通过，并给支付宝发送通知
+        logger.info("订单状态更新");
         ServerResponse serverResponse = iOrderService.alipayCallBack(parameters);
         if (serverResponse.isSuccess()){
             return Const.AlipayCallback.RESPONSE_SUCCESS;
@@ -116,6 +117,7 @@ public class OrderController {
      */
     @RequestMapping(value = "query_order_pay_status.do", method = RequestMethod.POST)
     public ServerResponse<Boolean> queryOrderPayStatus(HttpSession session, Long orderNo){
+        logger.info("支付宝轮询");
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if(user == null){
             return ServerResponse.createByErrorMessage(ResponseCode.NEED_LOGIN.getCode(),ResponseCode.NEED_LOGIN.getDesc());

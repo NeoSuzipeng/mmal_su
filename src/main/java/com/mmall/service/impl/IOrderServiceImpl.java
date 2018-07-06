@@ -131,7 +131,7 @@ public class IOrderServiceImpl implements IOrderService{
                 .setUndiscountableAmount(undiscountableAmount).setSellerId(sellerId).setBody(body)
                 .setOperatorId(operatorId).setStoreId(storeId).setExtendParams(extendParams)
                 .setTimeoutExpress(timeoutExpress)
-                                .setNotifyUrl(PropertiesUtil.getProperty("alipay.callback.url"))//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
+                .setNotifyUrl("http://smyang.s1.natapp.cc/order/alipay_callback.do")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
                 .setGoodsDetailList(goodsDetailList);
 
 
@@ -205,6 +205,8 @@ public class IOrderServiceImpl implements IOrderService{
         Long orderNo = Long.parseLong(params.get("out_trade_no"));
         String tradeNo = params.get("trade_no");
         String tradeStatus = params.get("trade_status");
+
+        log.info("trade_status",tradeStatus);
         //通过回调信息获取中订单信息
         Order order = orderMapper.selectByOrderNo(orderNo);
         if (order == null){
@@ -220,6 +222,9 @@ public class IOrderServiceImpl implements IOrderService{
             //更新订单支付状态
             order.setPaymentTime(DateUtil.stringToDate(params.get("gmt_payment")));
             order.setStatus(Const.OrderStatusEnum.PAID.getCode());
+            //Todo 订单支付时间
+
+            //
             orderMapper.updateByPrimaryKeySelective(order);
         }
 

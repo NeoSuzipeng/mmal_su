@@ -139,4 +139,9 @@ public class FTPUtil {
     public void setPwd(String pwd) {
         this.pwd = pwd;
     }
+
+//    public static void main(String[] args) {
+//        String ss = PropertiesUtil.getProperty("ftp.server.ip");
+//        System.out.print(ss);
+//    }
 }

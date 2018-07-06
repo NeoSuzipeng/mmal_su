@@ -207,7 +207,7 @@
     select
     <include refid="Base_Column_List" />
     from mmall_order
-    where id = #{orderNo}
+    where order_no = #{orderNo}
     and user_id = #{userId}
   </select>
 
@@ -217,7 +217,7 @@
     select
     <include refid="Base_Column_List" />
     from mmall_order
-    where id = #{orderNo}
+    where order_no = #{orderNo}
   </select>
 
 
