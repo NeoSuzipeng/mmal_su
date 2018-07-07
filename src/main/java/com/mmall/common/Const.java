@@ -92,7 +92,7 @@ public class Const {
                     return orderStatusEnum;
                 }
             }
-            throw new RuntimeException("么有找到对应的枚举");
+            throw new RuntimeException("没有对应枚举");
         }
     }
 
@@ -123,6 +123,36 @@ public class Const {
 
         public int getCode() {
             return code;
+        }
+    }
+
+
+
+    public enum PaymentTypeEnum{
+
+        ONLINE_PAY(1,"在线支付");
+
+        PaymentTypeEnum(int code,String value){
+            this.code = code;
+            this.value = value;
+        }
+        private String value;
+        private int code;
+
+        public String getValue() {
+            return value;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public static PaymentTypeEnum codeOf(Integer paymentType) {
+            for (PaymentTypeEnum paymentTypeEnum : values()){
+                if (paymentTypeEnum.getCode() == paymentType)
+                    return paymentTypeEnum;
+            }
+            throw new RuntimeException("没有对应枚举");
         }
     }
 }

@@ -3,6 +3,7 @@ package com.mmall.controller.portal;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.demo.trade.config.Configs;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import com.mmall.common.Const;
 import com.mmall.common.ResponseCode;
@@ -12,10 +13,10 @@ import com.mmall.service.IOrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +39,101 @@ public class OrderController {
     private IOrderService iOrderService;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
+
+    /**
+     * 创建订单后端接口
+     * @param session
+     * @param shippingId
+     * @return
+     */
+    @RequestMapping(value = "create.do",method = RequestMethod.POST)
+    @ResponseBody
+    public ServerResponse createOrder(HttpSession session, Integer shippingId){
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ServerResponse.createByErrorMessage(ResponseCode.NEED_LOGIN.getCode(),ResponseCode.NEED_LOGIN.getDesc());
+        }
+        return iOrderService.create(user.getId(), shippingId);
+    }
+
+    /**
+     * 取消订单后端接口
+     * @param session
+     * @param orderNo
+     * @return
+     */
+    @RequestMapping(value = "cancel.do",method = RequestMethod.POST)
+    @ResponseBody
+    public ServerResponse cancelOrder(HttpSession session, Long orderNo){
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ServerResponse.createByErrorMessage(ResponseCode.NEED_LOGIN.getCode(),ResponseCode.NEED_LOGIN.getDesc());
+        }
+        return iOrderService.cancel(user.getId(), orderNo);
+    }
+
+
+    @RequestMapping(value = "get_order_cart_product.do",method = RequestMethod.POST)
+    @ResponseBody
+    public ServerResponse getOrderCartProduct(HttpSession session){
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ServerResponse.createByErrorMessage(ResponseCode.NEED_LOGIN.getCode(),ResponseCode.NEED_LOGIN.getDesc());
+        }
+        return iOrderService.getOrderCartProduct(user.getId());
+    }
+
+
+    /**
+     * 订单详情后端接口
+     * @param session
+     * @param orderNo
+     * @return
+     */
+    @RequestMapping(value = "detail.do",method = RequestMethod.POST)
+    @ResponseBody
+    public ServerResponse detail(HttpSession session, Long orderNo){
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ServerResponse.createByErrorMessage(ResponseCode.NEED_LOGIN.getCode(),ResponseCode.NEED_LOGIN.getDesc());
+        }
+        return iOrderService.getOrderDetail(user.getId(), orderNo);
+    }
+
+
+    /**
+     * 用户订单列表后端接口
+     * @param session
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @RequestMapping(value = "list.do",method = RequestMethod.POST)
+    @ResponseBody
+    public ServerResponse<PageInfo> list(HttpSession session,
+                                         @RequestParam(value = "pageNum" ,defaultValue = "1" ) int pageNum,
+                                         @RequestParam(value = "pageSize" ,defaultValue = "10" ) int pageSize){
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ServerResponse.createByErrorMessage(ResponseCode.NEED_LOGIN.getCode(),ResponseCode.NEED_LOGIN.getDesc());
+        }
+        return iOrderService.getOrderlist(user.getId(),pageSize, pageNum);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * 订单支付

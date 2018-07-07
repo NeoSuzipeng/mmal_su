@@ -175,5 +175,20 @@
       and user_id = #{userId}
   </select>
 
+  <update id="bashInsert" parameterType="arraylist">
+    insert into mmall_order_item (id, user_id, order_no,
+      product_id, product_name, product_image,
+      current_unit_price, quantity, total_price,
+      create_time, update_time)
+      values
+      <foreach collection="orderItemList" index="index" item="item" separator="," >
+        (
+        #{item.userId},#{item.orderNo},#{item.productId},#{item.productName},#{item.currentUnitPrice},#{quantity},
+        #{item.total_price}, now(), now()
+        )
+      </foreach>
+
+  </update>
+
 
 </mapper>
