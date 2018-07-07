@@ -38,10 +38,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by 10353 on 2018/7/4.
@@ -86,6 +83,7 @@ public class IOrderServiceImpl implements IOrderService {
     }
 
 
+    // Pay Start
 
     /**
      * 支付宝支付主流程
@@ -248,9 +246,7 @@ public class IOrderServiceImpl implements IOrderService {
             //更新订单支付状态
             order.setPaymentTime(DateUtil.stringToDate(params.get("gmt_payment")));
             order.setStatus(Const.OrderStatusEnum.PAID.getCode());
-            //Todo 订单支付时间
 
-            //
             orderMapper.updateByPrimaryKeySelective(order);
         }
 
@@ -285,6 +281,9 @@ public class IOrderServiceImpl implements IOrderService {
         return ServerResponse.createByError();
     }
 
+    // Pay End
+
+    // Portal Start
 
     /**
      * 创建订单服务
@@ -349,11 +348,11 @@ public class IOrderServiceImpl implements IOrderService {
         newOrder.setId(order.getId());
         newOrder.setStatus(Const.OrderStatusEnum.CANCELED.getCode());
 
-        int rowCount = orderMapper.updateByPrimaryKey(newOrder);
+        int rowCount = orderMapper.updateByPrimaryKeySelective(newOrder);
         if (rowCount > 0){
-            return ServerResponse.createBySuccess();
+            return ServerResponse.createBySuccess("取消成功");
         }
-        return ServerResponse.createByError();
+        return ServerResponse.createByErrorMessage("取消失败");
     }
 
     /**
@@ -379,7 +378,7 @@ public class IOrderServiceImpl implements IOrderService {
             totalPrice = BigDecimalUtil.add(totalPrice.doubleValue(), orderItem.getTotalPrice().doubleValue());
             orderItemVoList.add(this.assembleOrderItemVo(orderItem));
         }
-
+        orderProductVo.setOrderItemVoList(orderItemVoList);
         orderProductVo.setProductTotalPrice(totalPrice);
         orderProductVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix"));
         return ServerResponse.createBySuccess(orderProductVo);
@@ -426,8 +425,10 @@ public class IOrderServiceImpl implements IOrderService {
         for (Order order : orderList){
             List<OrderItem> orderItemList = Lists.newArrayList();
             if (userId == null){
-                orderItemList = orderItemMapper.getByUserIdAndOrderNo(userId, null);
+                // 管理员操作
+                orderItemList = orderItemMapper.getByOrderNo(order.getOrderNo());
             }else{
+                //用户操作
                 orderItemList = orderItemMapper.getByUserIdAndOrderNo(userId, order.getOrderNo());
             }
             OrderVo orderVo = assembleOrderVo(order, orderItemList);
@@ -626,5 +627,87 @@ public class IOrderServiceImpl implements IOrderService {
         return orderNo;
     }
 
+
+
+    // Potal End
+
+    // backend start
+
+    /**
+     * 订单列表管理服务
+     * @param pageSize
+     * @param pageNum
+     * @return
+     */
+    public ServerResponse<PageInfo> manageList(Integer pageSize, Integer pageNum){
+
+        PageHelper.startPage(pageNum,pageSize);
+        List<Order> orderList = orderMapper.selectAllOrder();
+        List<OrderVo> orderVoList = this.assembleOrderVoList(orderList, null);
+        PageInfo pageInfo = new PageInfo(orderList);
+        pageInfo.setList(orderVoList);
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    /**
+     * 订单详情管理服务
+     * @param orderNo
+     * @return
+     */
+    public ServerResponse<OrderVo> manageOrderDetail(Long orderNo){
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if(order == null){
+            return ServerResponse.createByErrorMessage("订单不存在");
+        }
+
+        List<OrderItem> orderItemList = orderItemMapper.getByOrderNo(orderNo);
+        OrderVo orderVo = this.assembleOrderVo(order,orderItemList);
+        return ServerResponse.createBySuccess(orderVo);
+    }
+
+    /**
+     * 订单搜索管理服务 Version 1.0
+     * @param orderNo
+     * @param pageSize
+     * @param pageNum
+     * @return
+     */
+    public ServerResponse<PageInfo> manageOrderSearch(Long orderNo, Integer pageSize, Integer pageNum){
+        PageHelper.startPage(pageNum,pageSize);
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if(order == null){
+            return ServerResponse.createByErrorMessage("订单不存在");
+        }
+
+        List<OrderItem> orderItemList = orderItemMapper.getByOrderNo(orderNo);
+        OrderVo orderVo = this.assembleOrderVo(order,orderItemList);
+        PageInfo pageInfo = new PageInfo(Lists.newArrayList(order));
+        pageInfo.setList(Lists.newArrayList(orderVo));
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    /**
+     *
+     * 用户订单送货管理服务
+     * @param orderNo
+     * @return
+     */
+    @Override
+    public ServerResponse manageOrderSendGoods(Long orderNo) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order != null){
+            if (order.getStatus() == Const.OrderStatusEnum.PAID.getCode()){
+                order.setStatus(Const.OrderStatusEnum.SHIPPED.getCode());
+                order.setSendTime(new Date());
+                int rowCount = orderMapper.updateByPrimaryKey(order);
+                if (rowCount > 0){
+                    return ServerResponse.createBySuccess("发货成功");
+                }
+                return ServerResponse.createByErrorMessage("发货失败");
+            }
+        }
+        return ServerResponse.createByErrorMessage("订单不存在");
+    }
+    // backend end
 
 }

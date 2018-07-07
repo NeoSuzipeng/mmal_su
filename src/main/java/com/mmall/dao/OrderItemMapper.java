@@ -21,4 +21,6 @@ public interface OrderItemMapper {
     List<OrderItem> getByUserIdAndOrderNo(@Param("userId") Integer userId,@Param("orderNo") Long orderNo);
 
     void bashInsert(@Param("orderItemList") List<OrderItem> orderItemList);
+
+    List<OrderItem> getByOrderNo(@Param("orderNo") Long orderNo);
 }
