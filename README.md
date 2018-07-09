@@ -21,8 +21,8 @@
 - MySQL 5.7
 - Spring 4.2
 ## 架构设计
-[架构思考]（https://www.imooc.com/article/17545）——转Geely老师
+[架构思考]（https://www.imooc.com/article/17545）——转自Geely老师
 ## 接口设计
 [接口文档](https://gitee.com/imooccode/happymmallwiki/wikis/Home)
 
-version 1.0
+
